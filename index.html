@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Tareas</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 20px;
+            background: linear-gradient(135deg, #f0f0f0, #f9f9f9);
+            color: #333;
+            transition: background-color 0.5s;
+        }
+        .container {
+            max-width: 800px;
+            margin: auto;
+            background-color: #fff;
+            border-radius: 10px;
+            box-shadow: 0 0 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .days {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 20px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #e9ecef;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .day {
+            text-align: center;
+            font-weight: bold;
+            width: 14%;
+            color: #555;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .day:hover {
+            transform: translateY(-3px);
+        }
+        .current-day {
+            background-color: #007bff;
+            color: #fff;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+        .section {
+            background-color: #e9ecef;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+        }
+        .section:hover {
+            background-color: #dfe4ea;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .section h2 {
+            margin: 0 0 10px 0;
+            font-size: 24px;
+            border-bottom: 1px solid #ccc;
+            padding-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+        .section h2 i {
+            margin-left: auto;
+            font-size: 1.2em;
+        }
+        .tasks {
+            list-style: none;
+            padding: 0;
+        }
+        .tasks li {
+            position: relative;
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            font-size: 18px;
+            padding: 10px;
+            background-color: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            transition: background-color 0.3s ease, box-shadow 0.3s ease;
+            animation: fadeIn 0.5s ease-out;
+        }
+        .tasks li:hover {
+            background-color: #e0e0e0;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .tasks li.completed {
+            background-color: #d4edda;
+            color: #155724;
+            text-decoration: line-through;
+        }
+        .tasks li input[type="checkbox"] {
+            margin-right: 10px;
+        }
+        .tasks li .actions {
+            margin-left: auto;
+            display: none;
+        }
+        .tasks li:hover .actions {
+            display: block;
+        }
+        .tasks li .actions button {
+            border: none;
+            background: none;
+            color: red;
+            margin-left: 5px;
+            cursor: pointer;
+            transition: color 0.3s ease;
+        }
+        .tasks li .actions button:hover {
+            color: darkred;
+        }
+        .add-btn {
+            cursor: pointer;
+            color: #007bff;
+            font-size: 18px;
+            margin-top: 10px;
+        }
+        .add-btn:hover {
+            text-decoration: underline;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 1;
+            overflow: auto;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #888;
+            border-radius: 10px;
+            max-width: 80%;
+            position: relative;
+            animation: slideDown 0.5s ease-out;
+        }
+        .close {
+            color: #aaa;
+            font-size: 28px;
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: black;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideDown {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes shake {
+            0%, 100% {
+                transform: translateX(0);
+            }
+            10%, 30%, 50%, 70%, 90% {
+                transform: translateX(-5px);
+            }
+            20%, 40%, 60%, 80% {
+                transform: translateX(5px);
+            }
+        }
+        .day-counter {
+            background-color: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="days">
+            <div class="day" id="day1" onclick="toggleCurrentDay('day1')">Lunes</div>
+            <div class="day" id="day2" onclick="toggleCurrentDay('day2')">Martes</div>
+            <div class="day" id="day3" onclick="toggleCurrentDay('day3')">Miércoles</div>
+            <div class="day" id="day4" onclick="toggleCurrentDay('day4')">Jueves</div>
+            <div class="day" id="day5" onclick="toggleCurrentDay('day5')">Viernes</div>
+            <div class="day" id="day6" onclick="toggleCurrentDay('day6')">Sábado</div>
+        </div>
+        <div class="day-counter" id="dayCounter">
+            Faltan <span id="minutesLeft"></span> minutos para acabar el día
+        </div>
+        <div class="section" id="objectives-section">
+            <h2 style="color: #dc3545;">OBJETIVOS <i class="fas fa-bullseye"></i></h2>
+            <ul class="tasks" id="objectives"></ul>
+            <div class="add-btn" onclick="openModal('objectives')">Agregar objetivo <i class="fas fa-plus-circle"></i></div>
+        </div>
+        <div class="section">
+            <h2 style="color: #ffc107;">NO OLVIDAR <i class="fas fa-bookmark"></i></h2>
+            <ul class="tasks" id="dont-forget"></ul>
+            <div class="add-btn" onclick="openModal('dont-forget')">Agregar tarea <i class="fas fa-plus-circle"></i></div>
+        </div>
+        <div class="section">
+            <h2 style="color: #28a745;">COSAS POR HACER <i class="fas fa-tasks"></i></h2>
+            <div>
+                <h3>MAÑANA</h3>
+                <ul class="tasks" id="morning-tasks"></ul>
+                <div class="add-btn" onclick="openModal('morning-tasks')">Agregar tarea <i class="fas fa-plus-circle"></i></div>
+            </div>
+            <div>
+                <h3>TARDE</h3>
+                <ul class="tasks" id="afternoon-tasks"></ul>
+                <div class="add-btn" onclick="openModal('afternoon-tasks')">Agregar tarea <i class="fas fa-plus-circle"></i></div>
+            </div>
+            <div>
+                <h3>NOCHE                </h3>
+                <ul class="tasks" id="evening-tasks"></ul>
+                <div class="add-btn" onclick="openModal('evening-tasks')">Agregar tarea <i class="fas fa-plus-circle"></i></div>
+            </div>
+        </div>
+        <div class="section">
+            <h2 style="color: #007bff;">EN MI TIEMPO LIBRE <i class="fas fa-grin-beam"></i></h2>
+            <ul class="tasks" id="free-time"></ul>
+            <div class="add-btn" onclick="openModal('free-time')">Agregar tarea <i class="fas fa-plus-circle"></i></div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Nueva Tarea</h2>
+            <input type="text" id="newTaskInput" placeholder="Escribe tu nueva tarea..." style="font-size: 16px; padding: 10px; width: 80%; box-sizing: border-box;">
+            <br><br>
+            <label for="startTime">Hora de inicio:</label>
+            <input type="time" id="startTime" name="startTime" style="margin-bottom: 10px;">
+            <br>
+            <label for="endTime">Hora de fin:</label>
+            <input type="time" id="endTime" name="endTime" style="margin-bottom: 10px;">
+            <br>
+            <button onclick="addNewTask()" class="btn btn-primary">Agregar</button>
+        </div>
+    </div>
+
+    <!-- Font Awesome -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+
+    <!-- Bootstrap y JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@1.16.1/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        // Función para abrir el modal y asignar el ID de la lista
+        function openModal(listId) {
+            var modal = document.getElementById("myModal");
+            modal.style.display = "flex"; // Mostrar modal
+
+            // Guardar el ID de la lista en un atributo del modal para usarlo al agregar la tarea
+            modal.setAttribute("data-list-id", listId);
+
+            // Enfocar el campo de entrada automáticamente
+            document.getElementById("newTaskInput").focus();
+        }
+
+        // Función para cerrar el modal
+        function closeModal() {
+            var modal = document.getElementById("myModal");
+            modal.style.display = "none"; // Ocultar modal
+            document.getElementById("newTaskInput").value = ""; // Limpiar campo de entrada
+            document.getElementById("startTime").value = ""; // Limpiar campo de hora de inicio
+            document.getElementById("endTime").value = ""; // Limpiar campo de hora de fin
+        }
+
+        // Función para agregar nueva tarea desde el modal
+        function addNewTask() {
+            var modal = document.getElementById("myModal");
+            var listId = modal.getAttribute("data-list-id");
+            var tasksList = document.getElementById(listId);
+            var newTaskText = document.getElementById("newTaskInput").value.trim();
+            var startTime = document.getElementById("startTime").value.trim();
+            var endTime = document.getElementById("endTime").value.trim();
+
+            if (newTaskText !== "") {
+                var newTask = document.createElement('li');
+                newTask.classList.add('task-item');
+                newTask.innerHTML = '<input type="checkbox"> ' + newTaskText + ' <span class="time">(' + startTime + ' - ' + endTime + ')</span> <span class="actions"><button onclick="editTask(this)">Editar</button><button onclick="removeTask(this)">Eliminar</button></span>';
+                tasksList.appendChild(newTask);
+                saveTasks(); // Guardar tareas en localStorage
+                closeModal(); // Cerrar modal después de agregar la tarea
+            } else {
+                alert("Por favor, escribe una tarea válida.");
+            }
+        }
+
+    
+
+        // Función para eliminar tarea
+        function removeTask(obj) {
+            var parentLi = obj.parentNode.parentNode;
+            parentLi.parentNode.removeChild(parentLi);
+            saveTasks(); // Guardar tareas en localStorage después de eliminar
+        }
+
+        // Función para cargar las tareas guardadas desde localStorage
+        function loadTasks() {
+            var storedTasks = localStorage.getItem("tasks");
+            if (storedTasks) {
+                var tasks = JSON.parse(storedTasks);
+                for (var listId in tasks) {
+                    if (tasks.hasOwnProperty(listId)) {
+                        var tasksList = document.getElementById(listId);
+                        tasks[listId].forEach(function(taskObj) {
+                            var newTask = document.createElement('li');
+                            newTask.classList.add('task-item');
+                            newTask.innerHTML = '<input type="checkbox"> ' + taskObj.taskText + ' <span class="time">(' + taskObj.startTime + ' - ' + taskObj.endTime + ')</span> <span class="actions"><button onclick="editTask(this)">Editar</button><button onclick="removeTask(this)">Eliminar</button></span>';
+                            tasksList.appendChild(newTask);
+                        });
+                    }
+                }
+            }
+        }
+
+        // Función para guardar las tareas en localStorage
+        function saveTasks() {
+            var tasks = {};
+
+            // Recorrer todas las listas de tareas y guardar sus contenidos
+            var taskLists = document.querySelectorAll('.tasks');
+            taskLists.forEach(function(tasksList) {
+                var listId = tasksList.id;
+                tasks[listId] = [];
+                tasksList.querySelectorAll('li').forEach(function(taskItem) {
+                    var taskText = taskItem.querySelector('input[type="checkbox"]').nextSibling.textContent.trim();
+                    var timeText = taskItem.querySelector('.time').textContent.trim();
+                    var startTime = timeText.split(' - ')[0].slice(1);
+                    var endTime = timeText.split(' - ')[1].slice(0, -1);
+                    tasks[listId].push({
+                        taskText: taskText,
+                        startTime: startTime,
+                        endTime: endTime
+                    });
+                });
+            });
+
+            localStorage.setItem("tasks", JSON.stringify(tasks));
+        }
+
+        // Función para marcar el día actual
+        function toggleCurrentDay(dayId) {
+            var days = document.querySelectorAll('.day');
+            days.forEach(function(day) {
+                day.classList.remove('current-day');
+            });
+
+            var currentDay = document.getElementById(dayId);
+            currentDay.classList.add('current-day');
+            localStorage.setItem("currentDay", dayId); // Guardar el día actual en localStorage
+        }
+
+        // Cargar tareas y configuraciones al cargar la página
+        document.addEventListener("DOMContentLoaded", function() {
+            loadTasks(); // Cargar tareas guardadas
+            var currentDayId = localStorage.getItem("currentDay");
+            if (currentDayId) {
+                var currentDay = document.getElementById(currentDayId);
+                if (currentDay) {
+                    currentDay.classList.add('current-day'); // Marcar el día actual
+                }
+            }
+        });
+
+        // Función para actualizar el contador de minutos restantes hasta medianoche
+        function updateDayCounter() {
+            var now = new Date();
+            var midnight = new Date(now);
+            midnight.setHours(24, 0, 0, 0); // Establecer la medianoche de hoy
+
+            var timeLeft = midnight - now; // Obtener la diferencia en milisegundos
+            var minutesLeft = Math.floor(timeLeft / (1000 * 60)); // Convertir a minutos y redondear hacia abajo
+
+            document.getElementById("minutesLeft").textContent = minutesLeft; // Actualizar el texto del contador
+        }
+
+        // Actualizar el contador al cargar la página y cada minuto
+        updateDayCounter();
+        setInterval(updateDayCounter, 60000); // Actualizar cada minuto
+    </script>
+</body>
+</html>
+
